@@ -418,7 +418,12 @@ MILITARY BLACKLIST
 เข้าสู่ระบบเจ้าหน้าที่
 </button>
 
-<button class="clear-btn" onclick="clearAll()">
+<button
+class="clear-btn"
+id="clearButton"
+onclick="clearAll()"
+style="display:none;"
+>
 ล้างทั้งหมด
 </button>
 
@@ -587,6 +592,8 @@ LOGIN
 
 const blacklist = [];
 
+let isLoggedIn = false;
+
 /* LOGIN */
 
 function openLogin(){
@@ -639,11 +646,16 @@ function login(){
 
     if(valid){
 
+        isLoggedIn = true;
+
         alert("เข้าสู่ระบบสำเร็จ");
 
         closeLogin();
 
         document.getElementById("dashboard")
+        .style.display = "block";
+
+        document.getElementById("clearButton")
         .style.display = "block";
 
     }else{
@@ -868,6 +880,13 @@ function searchUser(){
 /* CLEAR ALL */
 
 function clearAll(){
+
+    if(!isLoggedIn){
+
+        alert("เฉพาะเจ้าหน้าที่เท่านั้น");
+        return;
+
+    }
 
     if(confirm("ล้างข้อมูลทั้งหมด?")){
 
