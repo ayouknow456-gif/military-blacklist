@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Military Blacklist</title>
+<title>Military Blacklist System</title>
 
 <style>
 body{
@@ -22,28 +22,9 @@ header{
 }
 
 .logo{
-    font-size:24px;
+    font-size:22px;
     font-weight:bold;
     color:red;
-}
-
-button{
-    padding:10px 15px;
-    background:red;
-    border:none;
-    color:white;
-    border-radius:8px;
-    cursor:pointer;
-}
-
-input,select{
-    width:100%;
-    padding:10px;
-    margin:5px 0;
-    border-radius:8px;
-    border:none;
-    background:#222;
-    color:white;
 }
 
 .container{
@@ -60,6 +41,25 @@ input,select{
     border-radius:10px;
 }
 
+input,select{
+    width:100%;
+    padding:10px;
+    margin:5px 0;
+    border:none;
+    border-radius:8px;
+    background:#222;
+    color:white;
+}
+
+button{
+    padding:10px 15px;
+    background:red;
+    border:none;
+    color:white;
+    border-radius:8px;
+    cursor:pointer;
+}
+
 .stats{
     display:grid;
     grid-template-columns:repeat(4,1fr);
@@ -69,17 +69,17 @@ input,select{
 
 .stat{
     background:#1a1a1d;
-    padding:15px;
-    border-radius:10px;
+    padding:10px;
     text-align:center;
+    border-radius:10px;
 }
 
+/* LOGIN */
 .modal{
     display:none;
     position:fixed;
     top:0;left:0;
-    width:100%;
-    height:100%;
+    width:100%;height:100%;
     background:rgba(0,0,0,0.6);
     justify-content:center;
     align-items:center;
@@ -116,22 +116,33 @@ input,select{
 <div class="stat"><div id="ban">0</div>ไม่อนุญาต</div>
 </div>
 
-<h3>ล่าสุด</h3>
+<h3>ล่าสุด (30 รายการ)</h3>
 <div id="list"></div>
 
+<!-- DASHBOARD -->
 <div id="dash" style="display:none;">
-<h3>เพิ่มข้อมูล</h3>
-<input id="name" placeholder="ชื่อ">
-<input id="reason" placeholder="เหตุผล">
-<input id="time" placeholder="ระยะเวลา">
 
-<select id="status">
+<h3>เพิ่มข้อมูล</h3>
+
+<!-- NETLIFY FORM -->
+<form name="blacklist" method="POST" data-netlify="true">
+
+<input type="hidden" name="form-name" value="blacklist">
+
+<input name="name" placeholder="ชื่อ Roblox" required>
+<input name="reason" placeholder="เหตุผล" required>
+<input name="time" placeholder="ระยะเวลา" required>
+
+<select name="status">
 <option>❌ ไม่อนุญาต</option>
 <option>✅ อนุมัติ</option>
 <option>⏳ รอดำเนินการ</option>
 </select>
 
-<button onclick="addData()">เพิ่ม</button>
+<button type="submit">เพิ่มข้อมูล</button>
+
+</form>
+
 </div>
 
 </div>
@@ -146,28 +157,7 @@ input,select{
 </div>
 </div>
 
-<script type="module">
-
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import {
-getFirestore,
-collection,
-addDoc,
-getDocs
-} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-
-const firebaseConfig = {
-  apiKey: "AIzaSyCviSAymU5TPS9foOlclvBlHR42qI0BCWA",
-  authDomain: "military-blacklist.firebaseapp.com",
-  projectId: "military-blacklist",
-  storageBucket: "military-blacklist.firebasestorage.app",
-  messagingSenderId: "705585446302",
-  appId: "1:705585446302:web:515ea5e7265e22aaf3aa8f",
-  measurementId: "G-K7VD2RSDLH"
-};
-
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
+<script>
 
 let data = [];
 
@@ -177,34 +167,8 @@ const admins = [
 {u:"adminYOK",p:"adminyok09266ei"}
 ];
 
-async function load(){
-
-const snap = await getDocs(collection(db,"blacklist"));
-data = snap.docs.map(d=>d.data());
-
-render();
-
-}
-
-window.addData = async function(){
-
-const name=document.getElementById("name").value;
-const reason=document.getElementById("reason").value;
-const time=document.getElementById("time").value;
-const status=document.getElementById("status").value;
-
-if(!name||!reason||!time){
-alert("กรอกข้อมูลให้ครบ");
-return;
-}
-
-await addDoc(collection(db,"blacklist"),{
-name,reason,time,status,t:Date.now()
-});
-
-load();
-
-}
+/* DEMO DATA (เพราะ Netlify Forms ดึงกลับ API ไม่ง่าย) */
+data = [];
 
 function render(){
 
@@ -213,11 +177,11 @@ list.innerHTML="";
 
 let ok=0,wait=0,ban=0;
 
-data.sort((a,b)=>b.t-a.t).slice(0,30).forEach(d=>{
+data.slice(-30).reverse().forEach(d=>{
 
-if(d.status.includes("อนุมัติ")) ok++;
-if(d.status.includes("รอดำเนินการ")) wait++;
-if(d.status.includes("ไม่อนุญาต")) ban++;
+if(d.status?.includes("อนุมัติ")) ok++;
+if(d.status?.includes("รอดำเนินการ")) wait++;
+if(d.status?.includes("ไม่อนุญาต")) ban++;
 
 list.innerHTML+=`
 <div class="card">
@@ -239,7 +203,7 @@ window.searchUser=function(){
 
 let v=document.getElementById("searchInput").value.toLowerCase();
 
-let f=data.find(x=>x.name.toLowerCase()==v);
+let f=data.find(x=>x.name?.toLowerCase()==v);
 
 let r=document.getElementById("result");
 
@@ -269,7 +233,12 @@ alert("ผิด");
 
 }
 
-load();
+/* NOTE:
+Netlify Forms จะเก็บข้อมูลใน Dashboard
+แต่เว็บ frontend ต้อง refresh / หรือ export CSV จาก Netlify
+*/
+
+render();
 
 </script>
 
