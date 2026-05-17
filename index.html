@@ -95,17 +95,20 @@ header{
     margin-left:10px;
 }
 
-/* RESULT */
+/* CARD */
 
-#result{
+#result,
+#latestList{
     margin-top:40px;
     display:flex;
+    flex-wrap:wrap;
     justify-content:center;
+    gap:20px;
 }
 
 .card{
     background:white;
-    width:350px;
+    width:320px;
     max-width:90%;
     padding:25px;
     border-radius:20px;
@@ -227,12 +230,14 @@ header{
     margin-bottom:20px;
 }
 
-.dashboard input{
+.dashboard input,
+.dashboard select{
     width:100%;
     padding:15px;
     margin-bottom:15px;
     border:2px solid gold;
     border-radius:12px;
+    background:white;
 }
 
 .dashboard button{
@@ -246,16 +251,9 @@ header{
     cursor:pointer;
 }
 
-.list{
-    margin-top:30px;
-}
-
-.list div{
-    background:#fafafa;
-    padding:15px;
-    border-left:5px solid red;
-    margin-bottom:10px;
-    border-radius:10px;
+.latest-title{
+    margin-top:60px;
+    color:#c40000;
 }
 
 </style>
@@ -292,6 +290,12 @@ MILITARY BLACKLIST
 </div>
 
 <div id="result"></div>
+
+<h2 class="latest-title">
+รายชื่อล่าสุด
+</h2>
+
+<div id="latestList"></div>
 
 </section>
 
@@ -331,11 +335,25 @@ LOGIN
 
 <input type="text" id="newDuration" placeholder="ระยะเวลา">
 
+<select id="newStatus">
+
+<option value="❌ ไม่อนุญาต">
+❌ ไม่อนุญาต
+</option>
+
+<option value="✅ อนุมัติ">
+✅ อนุมัติ
+</option>
+
+<option value="⏳ รอดำเนินการ">
+⏳ รอดำเนินการ
+</option>
+
+</select>
+
 <button onclick="addBlacklist()">
 เพิ่ม Blacklist
 </button>
-
-<div class="list" id="blacklistList"></div>
 
 </div>
 
@@ -361,13 +379,23 @@ function searchUser(){
 
     if(user){
 
+        let color = "red";
+
+        if(user.status.includes("อนุมัติ")){
+            color = "green";
+        }
+
+        if(user.status.includes("รอดำเนินการ")){
+            color = "orange";
+        }
+
         result.innerHTML = `
         <div class="card">
 
         <h2>${user.username}</h2>
 
-        <h3 style="color:red;">
-        BLACKLIST
+        <h3 style="color:${color};">
+        ${user.status}
         </h3>
 
         <br>
@@ -475,6 +503,9 @@ function addBlacklist(){
     const duration =
     document.getElementById("newDuration").value;
 
+    const status =
+    document.getElementById("newStatus").value;
+
     if(username === "" ||
        reason === "" ||
        duration === ""){
@@ -487,43 +518,57 @@ function addBlacklist(){
 
         username,
         reason,
-        duration
+        duration,
+        status
 
     });
 
-    updateList();
+    updateLatest();
 
     alert("เพิ่ม Blacklist สำเร็จ");
 
 }
 
-/* UPDATE LIST */
+/* UPDATE LATEST */
 
-function updateList(){
+function updateLatest(){
 
-    const list =
-    document.getElementById("blacklistList");
+    const latest =
+    document.getElementById("latestList");
 
-    list.innerHTML = "";
+    latest.innerHTML = "";
 
-    blacklist.forEach(user => {
+    blacklist.slice().reverse().forEach(user => {
 
-        list.innerHTML += `
-        <div>
+        let color = "red";
 
-        <b>${user.username}</b>
+        if(user.status.includes("อนุมัติ")){
+            color = "green";
+        }
 
-        <br><br>
+        if(user.status.includes("รอดำเนินการ")){
+            color = "orange";
+        }
 
-        เหตุผล: ${user.reason}
+        latest.innerHTML += `
+
+        <div class="card">
+
+        <h2>${user.username}</h2>
+
+        <h3 style="color:${color};">
+        ${user.status}
+        </h3>
 
         <br>
 
-        ระยะเวลา: ${user.duration}
+        <p><b>เหตุผล:</b> ${user.reason}</p>
+
+        <p><b>ระยะเวลา:</b> ${user.duration}</p>
 
         </div>
-        `;
 
+        `;
     });
 
 }
